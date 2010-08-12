@@ -26,8 +26,8 @@ class Client(object):
 
     def connect(self):
         print 'connect'
-        print self.sock.connect(self.address)
-        print '1111'
+        self.sock.connect(self.address)
+        print 'connecting'
         gevent.spawn(self.avatar._recv)
 
     def close(self):
@@ -37,7 +37,7 @@ class Client(object):
 if __name__ == '__main__':
     c = Client('127.0.0.1', 8888)
     c.connect()
-    print ':', c.avatar.call_remote('echo', 1, 2)
+    print '::', c.avatar.call_remote('echo', 1, 2)
 
 
 

@@ -20,7 +20,6 @@ class Connection(object):
     bufferSize = 1024
     def __init__(self, sock):
         self.sock = sock
-        gevent.spawn(self._recv)
 
     def _recv(self):
         print '_recv'

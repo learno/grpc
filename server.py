@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import operator
-
+import gevent
 from gevent import socket
 
 from base import BaseAvatar
@@ -36,6 +36,7 @@ class RPCServer(object):
             except KeyboardInterrupt:
                 break
             bird = Avatar(new_sock)
+            gevent.spawn(bird._recv)
 #            self.birds[0] = bird
 
 if __name__ == '__main__':
