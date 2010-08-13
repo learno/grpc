@@ -13,7 +13,7 @@ import simplejson as json
 
 #import operator
 
-class Connection(object):
+class Protocol(object):
     """
     """
     bufferSize = 1024
@@ -84,7 +84,7 @@ class Connection(object):
         pass
 
 
-class BaseAvatar(Connection):
+class BaseAvatar(Protocol):
     """
     """
     #use for judge response or request
