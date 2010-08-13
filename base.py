@@ -15,7 +15,6 @@ import simplejson as json
 
 class Connection(object):
     """
-    连接器
     """
     bufferSize = 1024
     def __init__(self, sock):
@@ -30,7 +29,7 @@ class Connection(object):
         data = ''
         while True:
             print 'loop'
-            #处理分段数据
+            #handle segment data
             if not data:
                 try:
                     data = self.sock.recv(self.bufferSize)
@@ -44,7 +43,7 @@ class Connection(object):
                     break
 
             print 'repr:', repr(data)#
-            #新包开始
+            #new segment
             if body_len is None:
                 body_len = unpack('>I', data[:4])[0]
                 data = data[4:]
@@ -53,7 +52,7 @@ class Connection(object):
             buff_len += len(data)
 
             print 'buff_len, body_len', buff_len, body_len#
-            #包不完整
+            #not enough
             if buff_len < body_len:
                 data = ''
                 continue
@@ -62,7 +61,7 @@ class Connection(object):
             del buff[:]
             buff_len = 0
             body = data[:body_len]
-            #其他包的部分
+            #rest data
             data = data[body_len:]
             body_len = None
 
@@ -88,7 +87,7 @@ class Connection(object):
 class BaseAvatar(Connection):
     """
     """
-    #判断收发
+    #use for judge response or request
     cmp = None #lt或gt
     step = None #-1或1
     end = None #maxint或minint
@@ -121,12 +120,12 @@ class BaseAvatar(Connection):
 
         request_id = request[0]
         if self.cmp(request_id, 0):
-            #收到回复
+            #receive response
             result = self.__results.pop(request_id, None)
             result.set(request[1])
             return
 
-        #处理请求
+        #handle request
         name, args = request[1], request[2:]
         try:
             func = getattr(self, 'remote_' + name)
