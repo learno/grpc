@@ -73,10 +73,9 @@ class Protocol(object):
                 print e
                 continue
 
-#        self.sock.close()
+        self.sock.close()
 
     def _send(self, data):
-
         data_len = pack('>I', len(data))
         self.sock.sendall(data_len + data)
 
@@ -115,6 +114,7 @@ class JsonAvatar(Protocol):
         return result.get()
 
     def _receive(self, data):
+        """unserialize data"""
         request = json.loads(data)
         print request
 
@@ -139,5 +139,6 @@ class JsonAvatar(Protocol):
             print u'Error:', e
 
     def _send(self, data):
+        """serialize and send data"""
         data = json.dumps(data)
         Protocol._send(self, data)

@@ -11,8 +11,6 @@ class Avatar(JsonAvatar):
     cmp = operator.gt #lt或gt
     step = 1 #-1或1
     end = 100 #maxint或minint
-    def __init__(self, sock):
-        JsonAvatar.__init__(self, sock)
 
     def remote_echo(self, a):
         return a

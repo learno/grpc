@@ -9,13 +9,6 @@ class Avatar(JsonAvatar):
     cmp = operator.lt #lt或gt
     step = -1 #-1或1
     end = -100 #maxint或minint
-    def __init__(self, sock):
-        JsonAvatar.__init__(self, sock)
-
-#        print self.call_remote('echo', 'luo')
-#        print 'sdfds'
-
-
 
     def remote_echo(self, a, b):
         return a, b
