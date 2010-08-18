@@ -102,7 +102,7 @@ class JsonAvatar(Protocol):
 
 
 
-    def call_remote(self, name, *args):
+    def remote(self, name, *args):
         request_id = self.__request_id
         print request_id
         if self.__request_id == self.end:

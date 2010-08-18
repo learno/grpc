@@ -17,29 +17,29 @@ class Avatar(JsonAvatar):
 
     def on_connection(self):
         print 'on_connection'
+        print '::', c.avatar.remote('echo', 1, 2)
+        self.sock.close()
 
 class Client(object):
-    def __init__(self, host, port):
+    def __init__(self, host, port, avatar_class):
         self.sock = socket.socket()
         self.address = (host, port)
-        self.avatar = Avatar(self.sock)
+        self.avatar = avatar_class(self.sock)
 
     def connect(self):
         print 'connect'
         self.sock.connect(self.address)
         gevent.spawn(self.avatar.on_connection)
-        gevent.spawn(self.avatar._recv)
+        self.avatar._recv()
 
     def close(self):
         self.sock.close()
 
 
 if __name__ == '__main__':
-    c = Client('127.0.0.1', 8888)
+    c = Client('127.0.0.1', 8888, Avatar)
     c.connect()
-    print '::', c.avatar.call_remote('echo', 1, 2)
-    gevent.sleep(10)
-
+    print 'end'
 
 
 
