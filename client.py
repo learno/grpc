@@ -12,7 +12,7 @@ class Avatar(JsonAvatar):
     step = 1 #-1或1
     end = 100 #maxint或minint
     def __init__(self, sock):
-        BaseAvatar.__init__(self, sock)
+        JsonAvatar.__init__(self, sock)
 
     def remote_echo(self, a):
         return a

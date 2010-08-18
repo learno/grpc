@@ -10,7 +10,7 @@ class Avatar(JsonAvatar):
     step = -1 #-1或1
     end = -100 #maxint或minint
     def __init__(self, sock):
-        BaseAvatar.__init__(self, sock)
+        JsonAvatar.__init__(self, sock)
 
 #        print self.call_remote('echo', 'luo')
 #        print 'sdfds'
