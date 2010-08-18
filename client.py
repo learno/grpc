@@ -15,6 +15,8 @@ class Avatar(JsonAvatar):
     def remote_echo(self, a):
         return a
 
+    def on_connection(self):
+        print 'on_connection'
 
 class Client(object):
     def __init__(self, host, port):
@@ -25,7 +27,7 @@ class Client(object):
     def connect(self):
         print 'connect'
         self.sock.connect(self.address)
-        print 'connecting'
+        gevent.spawn(self.avatar.on_connection)
         gevent.spawn(self.avatar._recv)
 
     def close(self):
@@ -36,6 +38,7 @@ if __name__ == '__main__':
     c = Client('127.0.0.1', 8888)
     c.connect()
     print '::', c.avatar.call_remote('echo', 1, 2)
+    gevent.sleep(10)
 
 
 

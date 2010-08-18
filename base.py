@@ -90,6 +90,11 @@ class JsonAvatar(Protocol):
     cmp = None #lt或gt
     step = None #-1或1
     end = None #maxint或minint
+
+
+    def on_connection(self):
+        pass
+
     def __init__(self, sock):
         Protocol.__init__(self, sock)
         self.__request_id = self.step
