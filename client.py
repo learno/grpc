@@ -4,10 +4,10 @@ import operator
 import gevent
 from gevent import socket
 
-from base import BaseAvatar
+from base import JsonAvatar
 
 
-class Avatar(BaseAvatar):
+class Avatar(JsonAvatar):
     cmp = operator.gt #lt或gt
     step = 1 #-1或1
     end = 100 #maxint或minint

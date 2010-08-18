@@ -84,7 +84,7 @@ class Protocol(object):
         pass
 
 
-class BaseAvatar(Protocol):
+class JsonAvatar(Protocol):
     """
     """
     #use for judge response or request
@@ -92,7 +92,7 @@ class BaseAvatar(Protocol):
     step = None #-1或1
     end = None #maxint或minint
     def __init__(self, sock):
-        Connection.__init__(self, sock)
+        Protocol.__init__(self, sock)
         self.__request_id = self.step
         self.__results = {}
 
@@ -140,4 +140,4 @@ class BaseAvatar(Protocol):
 
     def _send(self, data):
         data = json.dumps(data)
-        Connection._send(self, data)
+        Protocol._send(self, data)
