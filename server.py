@@ -19,6 +19,7 @@ class Avatar(JsonAvatar):
 
 
     def remote_echo(self, a, b):
+        c
         return a, b
 
 class RPCServer(object):

@@ -5,11 +5,14 @@ from gevent.event import AsyncResult
 from traceback import print_exc
 from sys import maxint as MAXINT
 
+try:
+    import yajl as json
+except:
+    import simplejson as json
 
 #from gevent.event import AsyncResult
 #from pyamf.amf3 import decode, encode, MIN_29B_INT
 #from pyamf import DecodeError
-import simplejson as json
 
 #import operator
 
@@ -103,6 +106,7 @@ class JsonAvatar(Protocol):
 
 
     def remote(self, name, *args):
+        """call the remote method"""
         request_id = self.__request_id
         print request_id
         if self.__request_id == self.end:
@@ -116,7 +120,10 @@ class JsonAvatar(Protocol):
         result = AsyncResult()
         self.__results[request_id] = result
         print 'result.get'
-        return result.get()
+        result = result.get()
+        if isinstance(result, Exception):
+            raise result
+        return result
 
     def _receive(self, data):
         """unserialize data"""
@@ -124,10 +131,18 @@ class JsonAvatar(Protocol):
         print request
 
         request_id = request[0]
+        #handle exception
+        if request_id is 0:
+            result_id, exception_args = request[1:]
+            result = self.__results.pop(result_id, None)
+            e = Exception(*exception_args)
+            if result: result.set(e)
+            return
+
         if self.cmp(request_id, 0):
             #receive response
             result = self.__results.pop(request_id, None)
-            result.set(request[1])
+            if result: result.set(request[1])
             return
 
         #handle request
@@ -139,9 +154,12 @@ class JsonAvatar(Protocol):
             response = (request_id, result)
             print response
 
-            self._send(response)
         except Exception, e:
             print u'Error:', e
+            response = (0, request_id, e.args)
+
+        self._send(response)
+
 
     def _send(self, data):
         """serialize and send data"""

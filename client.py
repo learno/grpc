@@ -17,7 +17,11 @@ class Avatar(JsonAvatar):
 
     def on_connection(self):
         print 'on_connection'
-        print '::', c.avatar.remote('echo', 1, 2)
+        try:
+            print '::', c.avatar.remote('echo', 1, 2)
+        except Exception, e:
+            print ':E:', e
+
         self.sock.close()
 
 class Client(object):
