@@ -105,8 +105,17 @@ class JsonAvatar(Protocol):
 
 
 
-    def remote(self, name, *args):
+    def remote(self, name, *args, **kargs):
         """call the remote method"""
+        result = self.remote_async(name, *args, **kargs)
+        print 'result.get'
+        result = result.get()
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+    def remote_async(self, name, *args, **kargs):
+        """call the remote method async mode"""
         request_id = self.__request_id
         print request_id
         if self.__request_id == self.end:
@@ -114,26 +123,24 @@ class JsonAvatar(Protocol):
         else:
             self.__request_id += self.step
 
-        args = (request_id, name) + args
+        args = (request_id, name, args, kargs)
         print args
         self._send(args)
         result = AsyncResult()
         self.__results[request_id] = result
-        print 'result.get'
-        result = result.get()
-        if isinstance(result, Exception):
-            raise result
+
         return result
 
     def _receive(self, data):
-        """unserialize data"""
+        """unserialize data and handle exception, response or request"""
         request = json.loads(data)
         print request
 
         request_id = request[0]
         #handle exception
         if request_id is 0:
-            result_id, exception_args = request[1:]
+            result_id = request[1]
+            exception_args = request[2]
             result = self.__results.pop(result_id, None)
             e = Exception(*exception_args)
             if result: result.set(e)
@@ -142,16 +149,19 @@ class JsonAvatar(Protocol):
         if self.cmp(request_id, 0):
             #receive response
             result = self.__results.pop(request_id, None)
-            if result: result.set(request[1])
+            value = request[1]
+            if result: result.set(value)
             return
 
         #handle request
-        name, args = request[1], request[2:]
+        name = request[1]
+        args = request[2]
+        kargs = request[3]
         try:
             func = getattr(self, 'remote_' + name)
             print args
-            result = func(*args)
-            response = (request_id, result)
+            value = func(*args, **kargs)
+            response = (request_id, value)
             print response
 
         except Exception, e:
