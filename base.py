@@ -182,7 +182,7 @@ class BaseAvatar(Protocol):
 
 
 
-class JsonAvatar(Protocol):
+class JsonAvatar(BaseAvatar):
     """
     """
     def _serialize(self, data):
