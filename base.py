@@ -83,30 +83,26 @@ class Protocol(object):
         self.sock.sendall(data_len + data)
 
     def _receive(self, _):
-        pass
+        raise
 
 
-class JsonAvatar(Protocol):
-    """
-    """
+class BaseAvatar(Protocol):
+    """"""
     #use for judge response or request
-    cmp = None #lt或gt
-    step = None #-1或1
-    end = None #maxint或minint
-
-
-    def on_connection(self):
-        pass
+    cmp = None #lt or gt
+    step = None #-1 or 1
+    end = None #maxint or minint
 
     def __init__(self, sock):
         Protocol.__init__(self, sock)
         self.__request_id = self.step
         self.__results = {}
 
-
+    def on_connection(self):
+        pass
 
     def remote(self, name, *args, **kargs):
-        """call the remote method"""
+        """call the remote method with the synchronous mode"""
         result = self.remote_async(name, *args, **kargs)
         print 'result.get'
         result = result.get()
@@ -115,7 +111,7 @@ class JsonAvatar(Protocol):
         return result
 
     def remote_async(self, name, *args, **kargs):
-        """call the remote method async mode"""
+        """call the remote method with the asynchronous mode"""
         request_id = self.__request_id
         print request_id
         if self.__request_id == self.end:
@@ -131,29 +127,40 @@ class JsonAvatar(Protocol):
 
         return result
 
+    def _send(self, data):
+        """serialize and send data"""
+        self._serialize(data)
+        Protocol._send(self, data)
+
+    def _serialize(self, data):
+        raise
+
     def _receive(self, data):
         """unserialize data and handle exception, response or request"""
-        request = json.loads(data)
+        request = self._unserialize(data)
         print request
 
         request_id = request[0]
-        #handle exception
         if request_id is 0:
-            result_id = request[1]
-            exception_args = request[2]
-            result = self.__results.pop(result_id, None)
-            e = Exception(*exception_args)
-            if result: result.set(e)
-            return
+            self._handle_exception(request)
 
         if self.cmp(request_id, 0):
-            #receive response
-            result = self.__results.pop(request_id, None)
-            value = request[1]
-            if result: result.set(value)
-            return
+            self.__handle_response(request)
+        self._handle_request(request)
 
-        #handle request
+    def _handle_exception(self, request):
+        result_id = request[1]
+        exception_args = request[2]
+        result = self.__results.pop(result_id, None)
+        exception = Exception(*exception_args)
+        if result: result.set(exception)
+
+    def _handle_response(self, request):
+        result = self.__results.pop(request_id, None)
+        value = request[1]
+        if result: result.set(value)
+
+    def _handle_request(self, request):
         name = request[1]
         args = request[2]
         kargs = request[3]
@@ -170,8 +177,17 @@ class JsonAvatar(Protocol):
 
         self._send(response)
 
+    def _unserialize(self, data):
+        raise
 
-    def _send(self, data):
-        """serialize and send data"""
-        data = json.dumps(data)
-        Protocol._send(self, data)
+
+
+class JsonAvatar(Protocol):
+    """
+    """
+    def _serialize(self, data):
+        return json.dumps(data)
+
+    def _unserialize(self, data):
+        return json.loads(data)
+
