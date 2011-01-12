@@ -6,9 +6,9 @@ from gevent import socket
 from base import JsonAvatar
 
 class Avatar(JsonAvatar):
-    cmp = operator.lt #lt或gt
-    step = -1 #-1或1
-    end = -100 #maxint或minint
+    cmp = operator.lt #lt or gt
+    step = -1 #-1 or 1
+    end = -100 #maxint or minint
     def __init__(self, sock):
         JsonAvatar.__init__(self, sock)
 

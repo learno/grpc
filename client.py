@@ -8,9 +8,9 @@ from base import JsonAvatar
 
 
 class Avatar(JsonAvatar):
-    cmp = operator.gt #lt或gt
-    step = 1 #-1或1
-    end = 100 #maxint或minint
+    cmp = operator.gt #lt or gt
+    step = 1 #-1 or 1
+    end = 100 #maxint or minint
 
     def remote_echo(self, a):
         return a
