@@ -32,7 +32,7 @@ class Protocol(object):
         data = ''
         while True:
             print 'loop'
-            #handle segment data
+                #handle segment data
             if not data:
                 try:
                     data = self.sock.recv(self.bufferSize)
@@ -156,6 +156,7 @@ class BaseAvatar(Protocol):
         if result: result.set(exception)
 
     def _handle_response(self, request):
+        request_id = request[0]
         result = self.__results.pop(request_id, None)
         value = request[1]
         if result: result.set(value)
@@ -168,6 +169,7 @@ class BaseAvatar(Protocol):
             func = getattr(self, 'remote_' + name)
             print args
             value = func(*args, **kargs)
+            request_id = request[0]
             response = (request_id, value)
             print response
 
