@@ -2,27 +2,29 @@
 import operator
 import gevent
 from gevent import socket
+import json
 
-from base import JsonAvatar
+from base import BaseAvatar
 
-class Avatar(JsonAvatar):
-    cmp = operator.lt #lt or gt
+class ServerAvatar(BaseAvatar):
+    cmp_func = operator.lt #lt or gt
     step = -1 #-1 or 1
     end = -100 #maxint or minint
-    def __init__(self, sock):
-        JsonAvatar.__init__(self, sock)
+    serialization = json
 
     def on_connection(self):
         print 'on_connection'
-        print self.remote('echo', 'server')
-        print self.remote('echo', 'next')
-
+        #print self.remote('echo', 'server')
+        #print self.remote('echo', 'next')
+        print 'call end'
 
     def remote_echo(self, a, b):
-        c
         return a, b
 
-class RPCServer(object):
+    def remote_raise(self):
+        raise Exception('test exception')
+
+class Server(object):
     backlog = 500
 
     def __init__(self, host, port, avatar_class):
@@ -46,7 +48,7 @@ class RPCServer(object):
 
 if __name__ == '__main__':
     print u'start'
-    s = RPCServer('localhost', 8888, Avatar)
+    s = Server('localhost', 8888, ServerAvatar)
     s.start()
     print u'end'
 

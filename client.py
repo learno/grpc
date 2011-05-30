@@ -1,26 +1,29 @@
 # -*- coding: UTF-8 -*-
 import operator
-
 import gevent
 from gevent import socket
+import json
 
-from base import JsonAvatar
+from base import BaseAvatar
 
 
-class Avatar(JsonAvatar):
-    cmp = operator.gt #lt or gt
+class ClientAvatar(BaseAvatar):
+    cmp_func = operator.gt #lt or gt
     step = 1 #-1 or 1
     end = 100 #maxint or minint
+    serialization = json
 
     def remote_echo(self, a):
         return a
 
     def on_connection(self):
         print 'on_connection'
+        print c.avatar.remote('echo', 1, 2)
         try:
-            print '::', c.avatar.remote('echo', 1, 2)
+            print c.avatar.remote('raise')
         except Exception, e:
-            print ':E:', e
+            print 'Error', e
+        print 'call end'
 
         self.sock.close()
 
@@ -41,7 +44,7 @@ class Client(object):
 
 
 if __name__ == '__main__':
-    c = Client('127.0.0.1', 8888, Avatar)
+    c = Client('127.0.0.1', 8888, ClientAvatar)
     c.connect()
     print 'end'
 
