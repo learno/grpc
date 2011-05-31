@@ -18,11 +18,12 @@ class ClientAvatar(BaseAvatar):
 
     def on_connection(self):
         print 'on_connection'
-        print c.avatar.remote('echo', 1, 2)
+        result = c.avatar.remote_async('echo', 1, 2)
         try:
             print c.avatar.remote('raise')
         except Exception, e:
             print 'Error', e
+        print result.get()
         print 'call end'
 
         self.sock.close()

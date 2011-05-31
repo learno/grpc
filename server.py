@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import operator
 import gevent
-from gevent import socket
+from gevent import socket, sleep
 import json
 
 from base import BaseAvatar
@@ -14,11 +14,12 @@ class ServerAvatar(BaseAvatar):
 
     def on_connection(self):
         print 'on_connection'
-        #print self.remote('echo', 'server')
-        #print self.remote('echo', 'next')
+        print self.remote('echo', 'server')
+        print self.remote('echo', 'next')
         print 'call end'
 
     def remote_echo(self, a, b):
+        sleep(4)
         return a, b
 
     def remote_raise(self):

@@ -10,7 +10,7 @@ class Protocol(object):
 
     Note: For best match with hardware and network realities, the value of bufsize should be a relatively small power of 2.
     """
-    bufsize = 1024
+    bufsize = 4096
     def __init__(self, sock):
         self.sock = sock
 
