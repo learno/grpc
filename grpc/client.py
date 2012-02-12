@@ -1,15 +1,15 @@
 # -*- coding: UTF-8 -*-
-import operator
-import gevent
-from gevent import socket
 try:
     import ujson as json
 except:
     import json
+import operator
 import sys
 
-from base import BaseAvatar
+import gevent
+from gevent import socket
 
+from base import BaseAvatar
 
 class ClientAvatar(BaseAvatar):
     cmp_func = operator.gt #lt or gt

@@ -1,13 +1,13 @@
 # -*- coding: UTF-8 -*-
-import operator
-import gevent
-from gevent import socket, sleep
-from gevent.server import StreamServer
 try:
     import ujson as json
 except:
     import json
+import operator
 import sys
+
+import gevent
+from gevent.server import StreamServer
 
 from base import BaseAvatar
 
@@ -25,7 +25,7 @@ class ServerAvatar(BaseAvatar):
 
     def remote_echo(self, a, b):
         print 'echo', a, b
-        sleep(4)
+        gevent.sleep(4)
         return a, b
 
     def remote_raise(self):

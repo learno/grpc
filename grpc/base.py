@@ -1,8 +1,9 @@
 # -*- coding: UTF-8 -*-
 from struct import pack, unpack
+from traceback import print_exc
+
 import gevent
 from gevent.event import AsyncResult
-from traceback import print_exc
 
 class Protocol(object):
     """
