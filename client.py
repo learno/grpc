@@ -2,7 +2,11 @@
 import operator
 import gevent
 from gevent import socket
-import json
+try:
+    import ujson as json
+except:
+    import json
+import sys
 
 from base import BaseAvatar
 
@@ -10,7 +14,7 @@ from base import BaseAvatar
 class ClientAvatar(BaseAvatar):
     cmp_func = operator.gt #lt or gt
     step = 1 #-1 or 1
-    end = 100 #maxint or minint
+    end = sys.maxint #maxint or -maxint
     serialization = json
 
     def remote_echo(self, a):

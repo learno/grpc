@@ -2,14 +2,19 @@
 import operator
 import gevent
 from gevent import socket, sleep
-import json
+from gevent.server import StreamServer
+try:
+    import ujson as json
+except:
+    import json
+import sys
 
 from base import BaseAvatar
 
 class ServerAvatar(BaseAvatar):
     cmp_func = operator.lt #lt or gt
     step = -1 #-1 or 1
-    end = -100 #maxint or minint
+    end = -sys.maxint #maxint or -maxint
     serialization = json
 
     def on_connection(self):
@@ -19,37 +24,28 @@ class ServerAvatar(BaseAvatar):
         print 'call end'
 
     def remote_echo(self, a, b):
+        print 'echo', a, b
         sleep(4)
         return a, b
 
     def remote_raise(self):
         raise Exception('test exception')
 
-class Server(object):
-    backlog = 500
-
-    def __init__(self, host, port, avatar_class):
-        self.sock = socket.socket()
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
-        self.sock.bind((host, port))
+class Server(StreamServer):
+    def __init__(self, listener, avatar_class, backlog=None, spawn='default', **ssl_args):
+        StreamServer.__init__(self, listener, self._handle, backlog, spawn, **ssl_args)
         self.avatar_class = avatar_class
         self.avatars = []
 
-    def start(self):
-        self.sock.listen(self.backlog)
-        while True:
-            try:
-                new_sock, address = self.sock.accept()
-            except KeyboardInterrupt:
-                break
-            avatar = self.avatar_class(new_sock)
-            gevent.spawn(avatar.on_connection)
-            gevent.spawn(avatar._recv)
-            self.avatars.append(avatar)
+    def _handle(self, sock, address):
+        avatar = self.avatar_class(sock)
+        self.avatars.append(avatar)
+        gevent.spawn(avatar.on_connection)
+        gevent.spawn(avatar._recv)
 
 if __name__ == '__main__':
     print u'start'
-    s = Server('localhost', 8888, ServerAvatar)
-    s.start()
+    s = Server(('localhost', 8888), ServerAvatar)
+    s.serve_forever()
     print u'end'
 

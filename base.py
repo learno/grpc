@@ -81,7 +81,7 @@ class BaseAvatar(Protocol):
     #use for judge response or request
     cmp_func = None #lt or gt
     step = None #-1 or 1
-    end = None #maxint or minint
+    end = None #maxint or -manint
 
     #the serialization must has methods is dumps and loads
     serialization = None
@@ -149,8 +149,7 @@ class BaseAvatar(Protocol):
         return self.serialization.loads(data)
 
     def _handle_exception(self, request):
-        result_id = request[1]
-        exception_args = request[2]
+        result_id, exception_args = request[1:3]
         result = self._results.pop(result_id, None)
         if result is None:
             return
@@ -166,10 +165,7 @@ class BaseAvatar(Protocol):
         result.set(value)
 
     def _handle_request(self, request):
-        request_id = request[0]
-        name = request[1]
-        args = request[2]
-        kargs = request[3]
+        request_id, name, args, kargs = request[0:4]
         try:
             func = getattr(self, 'remote_' + name)
             #print args
