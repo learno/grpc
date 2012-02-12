@@ -3,7 +3,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-setup(name='GRPC',
+setup(name='grpc',
     version='0.1',
     description='A socket RPC bases on Gevent',
     author='Learno',
