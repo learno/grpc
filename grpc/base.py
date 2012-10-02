@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from struct import pack, unpack
 from traceback import print_exc
+from sys import maxint
 import weakref
 
 import gevent
@@ -95,17 +96,17 @@ class Remote(object):
 
 class BaseAvatar(Protocol):
     """"""
-    #use for judge response or request
-    cmp_func = None #lt or gt
-    step = None #-1 or 1
-    end = None #maxint or -manint
+    REQUEST = 0
+    RESPONSE = 1
+    EXCEPTION = 2
 
+    end = maxint
     #the serialization must has methods is dumps and loads
     serialization = None
 
     def __init__(self, sock):
         Protocol.__init__(self, sock)
-        self._request_id = self.step
+        self._request_id = 0
         self._results = {}
         self.remote = Remote(self)
 
@@ -128,11 +129,11 @@ class BaseAvatar(Protocol):
         request_id = self._request_id
         #print request_id
         if self._request_id == self.end:
-            self._request_id = self.step
+            self._request_id = 0
         else:
-            self._request_id += self.step
+            self._request_id += 1
 
-        args = (request_id, name, args, kargs)
+        args = (self.REQUEST, request_id, name, args, kargs)
         #print 'args', args
         self._send(args)
         result = AsyncResult()
@@ -154,46 +155,46 @@ class BaseAvatar(Protocol):
         request = self._unserialize(data)
         #print 'request',request
 
-        request_id = request[0]
-        if request_id is 0:
-            self._handle_exception(request)
-        elif self.cmp_func(request_id, 0):
-            self._handle_response(request)
-        else:
-            self._handle_request(request)
+        data_type = request[0]
+        request_id = request[1]
+        if data_type == self.EXCEPTION:
+            exception_args = request[2]
+            self._handle_exception(request_id, exception_args)
+        elif data_type == self.RESPONSE:
+            value = request[2]
+            self._handle_response(request_id, value)
+        elif data_type == self.REQUEST:
+            name, args, kargs = request[2:5]
+            self._handle_request(request_id, name, args, kargs)
 
     def _unserialize(self, data):
         """if need, overload this'"""
         return self.serialization.loads(data)
 
-    def _handle_exception(self, request):
-        result_id, exception_args = request[1:3]
-        result = self._results.pop(result_id, None)
+    def _handle_exception(self, request_id, exception_args):
+        result = self._results.pop(request_id, None)
         if result is None:
             return
         exception = Exception(*exception_args)
         result.set(exception)
 
-    def _handle_response(self, request):
-        request_id = request[0]
+    def _handle_response(self, request_id, value):
         result = self._results.pop(request_id, None)
         if result is None:
             return
-        value = request[1]
         result.set(value)
 
-    def _handle_request(self, request):
-        request_id, name, args, kargs = request[0:4]
+    def _handle_request(self, request_id, name, args, kargs):
         try:
             func = getattr(self, name)
             #print args
             value = func(*args, **kargs)
-            response = (request_id, value)
+            response = (self.RESPONSE, request_id, value)
             #print response
 
         except Exception, e:
             #print u'Error:', e
-            response = (0, request_id, e.args)
+            response = (self.EXCEPTION, request_id, e.args)
 
         self._send(response)
 

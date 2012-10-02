@@ -12,9 +12,6 @@ from gevent.server import StreamServer
 from base import BaseAvatar
 
 class ServerAvatar(BaseAvatar):
-    cmp_func = operator.lt #lt or gt
-    step = -1 #-1 or 1
-    end = -sys.maxint #maxint or -maxint
     serialization = json
 
     def on_connection(self):

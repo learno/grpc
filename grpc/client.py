@@ -12,9 +12,6 @@ from gevent import socket
 from base import BaseAvatar
 
 class ClientAvatar(BaseAvatar):
-    cmp_func = operator.gt #lt or gt
-    step = 1 #-1 or 1
-    end = sys.maxint #maxint or -maxint
     serialization = json
 
     def echo(self, a):
