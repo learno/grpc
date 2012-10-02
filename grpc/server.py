@@ -19,16 +19,16 @@ class ServerAvatar(BaseAvatar):
 
     def on_connection(self):
         print 'on_connection'
-        print self.remote('echo', 'server')
-        print self.remote('echo', 'next')
+        print self.remote.echo('server')
+        print self.remote.echo('next')
         print 'call end'
 
-    def remote_echo(self, a, b):
+    def echo(self, a, b):
         print 'echo', a, b
         gevent.sleep(4)
         return a, b
 
-    def remote_raise(self):
+    def raise_(self):
         raise Exception('test exception')
 
 class Server(StreamServer):

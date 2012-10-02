@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from struct import pack, unpack
 from traceback import print_exc
+import weakref
 
 import gevent
 from gevent.event import AsyncResult
@@ -76,6 +77,21 @@ class Protocol(object):
     def _receive(self, _):
         raise
 
+class Remote(object):
+    __slots__ = ('_avater',)
+    def __init__(self, avatar):
+        self._avater = weakref.proxy(avatar)
+
+    def __getattr__(self, name):
+        def func(*args, **kargs):
+            result = self._avater._async_call(name, args, kargs)
+            result = result.get()
+            if isinstance(result, Exception):
+                raise result
+            return result
+        func.func_name = bytes(name)
+        return func
+
 
 class BaseAvatar(Protocol):
     """"""
@@ -91,21 +107,22 @@ class BaseAvatar(Protocol):
         Protocol.__init__(self, sock)
         self._request_id = self.step
         self._results = {}
+        self.remote = Remote(self)
 
     def on_connection(self):
         pass
 
-    def remote(self, name, *args, **kargs):
-        """call the remote method with the synchronous mode"""
-        result = self._async_call(name, args, kargs)
-        result = result.get()
-        if isinstance(result, Exception):
-            raise result
-        return result
+    #def remote(self, name, *args, **kargs):
+        #"""call the remote method with the synchronous mode"""
+        #result = self._async_call(name, args, kargs)
+        #result = result.get()
+        #if isinstance(result, Exception):
+            #raise result
+        #return result
 
-    def remote_async(self, name, *args, **kargs):
-        """call the remote method with the asynchronous mode"""
-        return self._async_call(name, args, kargs)
+    #def remote_async(self, name, *args, **kargs):
+        #"""call the remote method with the asynchronous mode"""
+        #return self._async_call(name, args, kargs)
 
     def _async_call(self, name, args, kargs):
         request_id = self._request_id
@@ -168,7 +185,7 @@ class BaseAvatar(Protocol):
     def _handle_request(self, request):
         request_id, name, args, kargs = request[0:4]
         try:
-            func = getattr(self, 'remote_' + name)
+            func = getattr(self, name)
             #print args
             value = func(*args, **kargs)
             response = (request_id, value)

@@ -17,17 +17,18 @@ class ClientAvatar(BaseAvatar):
     end = sys.maxint #maxint or -maxint
     serialization = json
 
-    def remote_echo(self, a):
+    def echo(self, a):
         return a
 
     def on_connection(self):
         print 'on_connection'
-        result = c.avatar.remote_async('echo', 1, 2)
+        print client.avatar.remote.echo(1, 2)
+        #result = client.avatar.remote_async('echo', 1, 2)
         try:
-            print c.avatar.remote('raise')
+            print client.avatar.remote.raise_()
         except Exception, e:
             print 'Error', e
-        print result.get()
+        #print result.get()
         print 'call end'
 
         self.sock.close()
@@ -49,8 +50,8 @@ class Client(object):
 
 
 if __name__ == '__main__':
-    c = Client('127.0.0.1', 8888, ClientAvatar)
-    c.connect()
+    client = Client('127.0.0.1', 8888, ClientAvatar)
+    client.connect()
     print 'end'
 
 
