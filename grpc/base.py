@@ -15,6 +15,8 @@ class Protocol(object):
     """
     bufsize = 4096
     def __init__(self, sock):
+        assert self._receive.im_class is not Protocol, Exception(
+            'Must Overload _receive')
         self.sock = sock
 
     def _recv(self):
@@ -38,27 +40,30 @@ class Protocol(object):
                     #print 'break'
                     break
 
-            #print 'repr:', repr(data)#
-            #new segment
-            if body_len is None:
-                body_len = unpack('>I', data[:4])[0]
-                data = data[4:]
-
             buff.append(data)
             buff_len += len(data)
 
+            #print 'repr:', repr(data)#
+            #new message
+            if body_len is None:
+                if len(data) < 4:
+                    data = ''
+                    continue
+                body_len = unpack('>I', data[:4])[0]
+
             #print 'buff_len, body_len', buff_len, body_len#
             #not enough
-            if buff_len < body_len:
+            message_len = 4 + body_len
+            if buff_len < message_len:
                 data = ''
                 continue
 
             data = ''.join(buff)
             del buff[:]
             buff_len = 0
-            body = data[:body_len]
+            body = data[4:message_len]
             #rest data
-            data = data[body_len:]
+            data = data[message_len:]
             body_len = None
 
 
@@ -75,7 +80,7 @@ class Protocol(object):
         data_len = pack('>I', len(data))
         self.sock.sendall(data_len + data)
 
-    def _receive(self, _):
+    def _receive(self, data):
         raise
 
 class Remote(object):
