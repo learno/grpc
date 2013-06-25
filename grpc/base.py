@@ -46,9 +46,11 @@ class Protocol(object):
             #print 'repr:', repr(data)#
             #new message
             if body_len is None:
-                if len(data) < 4:
+                if buff_len < 4:
                     data = ''
                     continue
+                if len(buff) > 1:
+                    data = ''.join(buff)
                 body_len = unpack('>I', data[:4])[0]
 
             #print 'buff_len, body_len', buff_len, body_len#
