@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 from struct import pack, unpack
 from traceback import print_exc
 from sys import maxint
@@ -20,63 +20,33 @@ class Protocol(object):
         self.sock = sock
 
     def _recv(self):
-        #print '_recv'
-
-        buff = []
-        body_len = None
-        buff_len = 0
-        data = ''
+        buff = ''
         while True:
-            #print 'loop'
-            #handle segment data
-            if not data:
-                try:
-                    data = self.sock.recv(self.bufsize)
-                except:
-                    print_exc()
-                    break
+            if len(buff) >= 4:
+                message_len = unpack('>I', buff[:4])[0]
+                if len(buff) >= 4 + message_len:
+                    message = buff[4:4 + message_len]
+                    buff = buff[4 + message_len:]
+                    try:
+                        gevent.spawn(self._receive, message)
+                    except:
+                        print_exc()
+                    finally:
+                        continue
 
-                if not data:
-                    #print 'break'
-                    break
-
-            buff.append(data)
-            buff_len += len(data)
-
-            #print 'repr:', repr(data)#
-            #new message
-            if body_len is None:
-                if buff_len < 4:
-                    data = ''
-                    continue
-                if len(buff) > 1:
-                    data = ''.join(buff)
-                body_len = unpack('>I', data[:4])[0]
-
-            #print 'buff_len, body_len', buff_len, body_len#
-            #not enough
-            message_len = 4 + body_len
-            if buff_len < message_len:
-                data = ''
-                continue
-
-            data = ''.join(buff)
-            del buff[:]
-            buff_len = 0
-            body = data[4:message_len]
-            #rest data
-            data = data[message_len:]
-            body_len = None
-
-
+            # read message
             try:
-                gevent.spawn(self._receive, body)
+                data = self.sock.recv(self.bufsize)
             except:
                 print_exc()
-                #print e
-                continue
-
+                break
+            # end recv
+            if not data:
+                break
+            
+            buff += data
         self.sock.close()
+        self.on_disconnection()
 
     def _send(self, data):
         data_len = pack('>I', len(data))
@@ -84,6 +54,13 @@ class Protocol(object):
 
     def _receive(self, data):
         raise
+
+    def on_connection(self):
+        pass
+
+    def on_disconnection(self):
+        pass
+
 
 class Remote(object):
     __slots__ = ('_avater',)
@@ -117,9 +94,6 @@ class BaseAvatar(Protocol):
         self._results = {}
         self.remote = Remote(self)
 
-    def on_connection(self):
-        pass
-
     #def remote(self, name, *args, **kargs):
         #"""call the remote method with the synchronous mode"""
         #result = self._async_call(name, args, kargs)
@@ -142,10 +116,13 @@ class BaseAvatar(Protocol):
 
         args = (self.REQUEST, request_id, name, args, kargs)
         #print 'args', args
-        self._send(args)
         result = AsyncResult()
         self._results[request_id] = result
-
+        try:
+            self._send(args)
+        except:
+            self._results.pop(request_id)
+            raise
         return result
 
     def _send(self, data):
